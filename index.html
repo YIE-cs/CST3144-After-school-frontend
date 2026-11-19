@@ -10,85 +10,119 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <title>Document</title>
   </head>
+
   <body>
     <div id="afterSchoolLesson">
       <h1>{{ message }}</h1>
-      <div v-for="lesson in sortedPriceDesc" :key="lesson.id">
-        <br />
-        <i :class="lesson.icon" style="font-size: 40px"></i>
-        <h2>{{ lesson.subject }}</h2>
-        <p>{{ lesson.price }}</p>
-        <p>{{ lesson.location }}</p>
-        <p>{{ lesson.availability }}</p>
-        <button @click="addLesson(lesson)" :disabled="!canAddToCart(lesson)">
-          Add To Cart
+
+      <div v-if="showCart">
+        <h2>Cart</h2>
+
+        <div v-for="lesson in cart" :key="lesson.id">
+          <p>{{ lesson.subject }} - {{ lesson.price }}</p>
+        </div>
+
+        <p>Total Price: {{ calcPrice(cart) }}</p>
+
+        <button @click="!toggleShowCart">continue shopping</button>
+      </div>
+
+      <div v-else>
+        <div v-for="lesson in sortedPriceDesc" :key="lesson.id">
+          <br />
+          <i :class="lesson.icon" style="font-size: 40px"></i>
+          <h2>{{ lesson.subject }}</h2>
+          <p>{{ lesson.price }}</p>
+          <p>{{ lesson.location }}</p>
+          <p>{{ lesson.availability }}</p>
+
+          <button @click="addLesson(lesson)" :disabled="!canAddToCart(lesson)">
+            Add To Cart
+          </button>
+          <br />
+        </div>
+
+        <br /><br />
+
+        <button @click="!toggleShowCart" :disabled="cartLength === 0">
+          <i class="fa fa-shopping-cart"></i> Cart ({{ cartLength }})
         </button>
-        <br />
       </div>
     </div>
+
     <script>
       const { createApp } = Vue;
+
       const myapp = Vue.createApp({
         data() {
           return {
             message: "Hello Vue!",
             lessons: [],
             cart: [],
+            showCart: false,
           };
         },
+
         computed: {
           // sort in ascending order
           sortedPriceAsc: function () {
             function compare(a, b) {
-              // if (!this.lessons) {
-              //   return [];
-              // }
               if (a.price > b.price) return 1;
               else if (a.price < b.price) return -1;
               else return 0;
             }
+
             return [...this.lessons].sort(compare);
           },
 
           // sort in descending order
           sortedPriceDesc: function () {
             function compare(a, b) {
-              // if (!this.lessons) {
-              //   return [];
-              // }
               if (a.price < b.price) return 1;
               else if (a.price > b.price) return -1;
               else return 0;
             }
+
             return [...this.lessons].sort(compare);
           },
-          //Cart length
+
+          // Cart length
           cartLength() {
             return this.cart.length;
           },
+
+          toggleShowCart() {
+            this.showCart = this.showCart ? false : true;
+          },
         },
+
         mounted() {
           this.fetchLessons();
         },
+
         methods: {
           async fetchLessons() {
             try {
               let url = "http://Localhost:3000/lessons";
               let response = await fetch(url);
+
               if (!response.ok) {
                 throw new Error("Failed to fetch lessons");
               }
+
               this.lessons = await response.json();
             } catch (error) {
               console.error("Error fetching lessons:", error);
             }
           },
+
           canAddToCart(lesson) {
             if (lesson.availability <= 0) {
               return false;
             }
             return true;
           },
+
           addLesson(lesson) {
             if (!this.canAddToCart(lesson)) {
               alert("Sorry, this lesson is fully booked.");
@@ -97,8 +131,19 @@
               lesson.availability--;
             }
           },
+
+          calcPrice(cart) {
+            let totalPrice = 0;
+
+            for (let i = 0; i < cart.length; i++) {
+              totalPrice += cart[i].price;
+            }
+
+            return totalPrice;
+          },
         },
       });
+
       myapp.mount("#afterSchoolLesson");
     </script>
   </body>
