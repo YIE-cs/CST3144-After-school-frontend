@@ -88,7 +88,12 @@
 
           // Cart length
           cartLength() {
-            return this.cart.length;
+            // return this.cart.length;
+            let total = 0;
+            for (let i = 0; i < this.cart.length; i++) {
+              total += this.cart[i].quantity;
+            }
+            return total;
           },
 
           toggleShowCart() {
@@ -127,7 +132,19 @@
             if (!this.canAddToCart(lesson)) {
               alert("Sorry, this lesson is fully booked.");
             } else {
-              this.cart.push(lesson);
+              let existingLesson = this.cart.find(
+                (item) => item.id === lesson.id,
+              );
+
+              if (existingLesson) {
+                existingLesson.quantity++;
+              } else {
+                this.cart.push({
+                  ...lesson,
+                  quantity: 1,
+                });
+              }
+
               lesson.availability--;
             }
           },
@@ -136,7 +153,11 @@
             let totalPrice = 0;
 
             for (let i = 0; i < cart.length; i++) {
-              totalPrice += cart[i].price;
+              if (cart[i].quantity > 1) {
+                totalPrice += cart[i].price * cart[i].quantity;
+              } else {
+                totalPrice += cart[i].price;
+              }
             }
 
             return totalPrice;
