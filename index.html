@@ -13,7 +13,7 @@
   <body>
     <div id="afterSchoolLesson">
       <h1>{{ message }}</h1>
-      <div v-for="lesson in lessons" :key="lesson.id">
+      <div v-for="lesson in sortedPriceDesc" :key="lesson.id">
         <br />
         <i :class="lesson.icon" style="font-size: 40px"></i>
         <h2>{{ lesson.subject }}</h2>
@@ -32,44 +32,39 @@
         data() {
           return {
             message: "Hello Vue!",
-            lessons: null,
+            lessons: [],
             cart: [],
           };
         },
         computed: {
-          cartLength() {
-            return this.cart.length;
-          },
           // sort in ascending order
           sortedPriceAsc: function () {
             function compare(a, b) {
-              if (!this.lessons) {
-              }
-              if (a.price < b.price) {
-                return -1;
-              } else if (a.price > b.price) {
-                return 1;
-              } else {
-                return 0;
-              }
-              this.lessons.sort(compare);
+              // if (!this.lessons) {
+              //   return [];
+              // }
+              if (a.price > b.price) return 1;
+              else if (a.price < b.price) return -1;
+              else return 0;
             }
+            return [...this.lessons].sort(compare);
           },
 
           // sort in descending order
           sortedPriceDesc: function () {
             function compare(a, b) {
-              if (!this.lessons) {
-              }
-              if (b.price < a.price) {
-                return -1;
-              } else if (b.price > a.price) {
-                return 1;
-              } else {
-                return 0;
-              }
-              this.lessons.sort(compare);
+              // if (!this.lessons) {
+              //   return [];
+              // }
+              if (a.price < b.price) return 1;
+              else if (a.price > b.price) return -1;
+              else return 0;
             }
+            return [...this.lessons].sort(compare);
+          },
+          //Cart length
+          cartLength() {
+            return this.cart.length;
           },
         },
         mounted() {
