@@ -45,6 +45,44 @@
 
         <p>Total Price: {{ calcPrice(cart) }}</p>
 
+       <h1>Checkout Details</h1>
+        <form @submit.prevent="checkout">
+          <label for="firstName">First Name:</label>
+          <input type="text" id="firstName" v-model="firstName" />
+
+          <p v-if="firstName && !isFirstNameValid" style="color: red">
+            First name must contain only letters.
+          </p>
+
+          <br /><br />
+
+          <label for="lastName">Last Name:</label>
+          <input type="text" id="lastName" v-model="lastName" />
+
+          <p v-if="lastName && !isLastNameValid" style="color: red">
+            Last name must contain only letters.
+          </p>
+
+          <br /><br />
+
+          <label for="phoneNumber">Phone Number:</label>
+          <input type="text" id="phoneNumber" v-model="phoneNumber" />
+
+          <p v-if="phoneNumber && !isPhoneValid" style="color: red">
+            Please enter a valid 8-digit phone number.
+          </p>
+
+          <br /><br />
+
+          <button type="submit" :disabled="!canCheckout">
+            Checkout
+          </button>
+        </form>
+
+        <p v-if="orderSubmitted" style="color: green">
+          Order submitted successfully!
+        </p>
+      </br />
         <button @click="toggleShowCart">Continue Shopping</button>
       </div>
 
@@ -88,6 +126,10 @@
             lessons: [],
             cart: [],
             showCart: false,
+            firstName: "",
+            lastName: "",
+            phoneNumber: "",
+            orderSubmitted: false,
           };
         },
 
@@ -123,6 +165,30 @@
             }
 
             return total;
+          },
+          isFirstNameValid() {
+            const nameRegex = /^[A-Za-z]+$/;
+            return nameRegex.test(this.firstName.trim());
+          },
+
+          isLastNameValid() {
+            const nameRegex = /^[A-Za-z]+$/;
+            return nameRegex.test(this.lastName.trim());
+          },
+
+          isPhoneValid() {
+            const phoneRegex = /^\d{8}$/;
+            return phoneRegex.test(this.phoneNumber.trim());
+          },
+
+          canCheckout() {
+            return (
+              this.isFirstNameValid &&
+              this.isLastNameValid &&
+              this.isPhoneValid &&
+              this.cartLength > 0 &&
+              !this.orderSubmitted
+            );
           },
         },
 
@@ -199,6 +265,30 @@
 
               this.cart.splice(index, 1);
             }
+          },
+           validateForm() {
+            return (
+              this.isFirstNameValid &&
+              this.isLastNameValid &&
+              this.isPhoneValid
+            );
+          },
+
+          checkout() {
+            if (!this.validateForm() || !this.canCheckout) {
+              return;
+            }
+
+            const fullName =
+              this.firstName.trim() + " " + this.lastName.trim();
+
+            console.log("Customer Name:", fullName);
+            console.log("Phone Number:", this.phoneNumber);
+            console.log("Ordered Lessons:", this.cart);
+
+            // Temporary  confirmation
+            
+            this.orderSubmitted = true;
           },
 
           toggleShowCart() {
