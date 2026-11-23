@@ -3,11 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
     <title>Document</title>
   </head>
 
@@ -18,34 +21,59 @@
       <div v-if="showCart">
         <h2>Cart</h2>
 
-        <div v-for="lesson in cart" :key="lesson.id">
-          <p>{{ lesson.subject }} - {{ lesson.price }}</p>
-        </div>
+        <table border="1" cellpadding="10">
+          <thead>
+            <tr>
+              <th>Lesson</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr v-for="lesson in cart" :key="lesson.id">
+              <td>{{ lesson.subject }}</td>
+              <td>{{ lesson.price }}</td>
+              <td>{{ lesson.quantity }}</td>
+              <td>{{ lesson.price * lesson.quantity }}</td>
+              <td><button @click="removeLesson(lesson)">Remove</button></td>
+            </tr>
+          </tbody>
+        </table>
 
         <p>Total Price: {{ calcPrice(cart) }}</p>
 
-        <button @click="!toggleShowCart">continue shopping</button>
+        <button @click="toggleShowCart">Continue Shopping</button>
       </div>
 
       <div v-else>
         <div v-for="lesson in sortedPriceDesc" :key="lesson.id">
           <br />
+
           <i :class="lesson.icon" style="font-size: 40px"></i>
+
           <h2>{{ lesson.subject }}</h2>
+
           <p>{{ lesson.price }}</p>
+
           <p>{{ lesson.location }}</p>
+
           <p>{{ lesson.availability }}</p>
 
           <button @click="addLesson(lesson)" :disabled="!canAddToCart(lesson)">
             Add To Cart
           </button>
+
           <br />
         </div>
 
         <br /><br />
 
-        <button @click="!toggleShowCart" :disabled="cartLength === 0">
-          <i class="fa fa-shopping-cart"></i> Cart ({{ cartLength }})
+        <button @click="toggleShowCart" :disabled="cartLength === 0">
+          <i class="fa fa-shopping-cart"></i>
+          Cart ({{ cartLength }})
         </button>
       </div>
     </div>
@@ -53,7 +81,7 @@
     <script>
       const { createApp } = Vue;
 
-      const myapp = Vue.createApp({
+      const myapp = createApp({
         data() {
           return {
             message: "Hello Vue!",
@@ -64,7 +92,7 @@
         },
 
         computed: {
-          // sort in ascending order
+          // Sort in ascending order
           sortedPriceAsc: function () {
             function compare(a, b) {
               if (a.price > b.price) return 1;
@@ -75,7 +103,7 @@
             return [...this.lessons].sort(compare);
           },
 
-          // sort in descending order
+          // Sort in descending order
           sortedPriceDesc: function () {
             function compare(a, b) {
               if (a.price < b.price) return 1;
@@ -88,16 +116,13 @@
 
           // Cart length
           cartLength() {
-            // return this.cart.length;
             let total = 0;
+
             for (let i = 0; i < this.cart.length; i++) {
               total += this.cart[i].quantity;
             }
-            return total;
-          },
 
-          toggleShowCart() {
-            this.showCart = this.showCart ? false : true;
+            return total;
           },
         },
 
@@ -108,7 +133,7 @@
         methods: {
           async fetchLessons() {
             try {
-              let url = "http://Localhost:3000/lessons";
+              let url = "http://localhost:3000/lessons";
               let response = await fetch(url);
 
               if (!response.ok) {
@@ -125,6 +150,7 @@
             if (lesson.availability <= 0) {
               return false;
             }
+
             return true;
           },
 
@@ -153,14 +179,30 @@
             let totalPrice = 0;
 
             for (let i = 0; i < cart.length; i++) {
-              if (cart[i].quantity > 1) {
-                totalPrice += cart[i].price * cart[i].quantity;
-              } else {
-                totalPrice += cart[i].price;
-              }
+              totalPrice += cart[i].price * cart[i].quantity;
             }
 
             return totalPrice;
+          },
+
+          removeLesson(lesson) {
+            const index = this.cart.indexOf(lesson);
+
+            if (index > -1) {
+              const initialLesson = this.lessons.find(
+                (item) => item.id === lesson.id,
+              );
+
+              if (initialLesson) {
+                initialLesson.availability += lesson.quantity;
+              }
+
+              this.cart.splice(index, 1);
+            }
+          },
+
+          toggleShowCart() {
+            this.showCart = !this.showCart;
           },
         },
       });
