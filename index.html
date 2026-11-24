@@ -256,6 +256,9 @@
 
             return totalPrice;
           },
+           toggleShowCart() {
+            this.showCart = !this.showCart;
+          },
 
           removeLesson(lesson) {
             const index = this.cart.indexOf(lesson);
@@ -281,25 +284,43 @@
           },
 
           checkout() {
-            if (!this.validateForm() || !this.canCheckout) {
-              return;
-            }
+    if (!this.validateForm() || !this.canCheckout) {
+        return;
+    }
 
-            const fullName =
-              this.firstName.trim() + " " + this.lastName.trim();
+      const newOrder = {
+        name: this.firstName + " " + this.lastName,
+        phoneNumber: this.phoneNumber,
+        lessons: this.cart.map(item => ({
+        lessonId: item.id,
+        subject: item.subject,
+        spaces: item.quantity
+    }))
+      };
 
-            console.log("Customer Name:", fullName);
-            console.log("Phone Number:", this.phoneNumber);
-            console.log("Ordered Lessons:", this.cart);
-
-            // Temporary  confirmation
-            
-            this.orderSubmitted = true;
+      fetch("http://localhost:3000/order", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
           },
+          body: JSON.stringify(newOrder)
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error("Failed to submit order");
+          }
 
-          toggleShowCart() {
-            this.showCart = !this.showCart;
-          },
+          return response.json();
+      })
+      .then(data => {
+          console.log(data);
+          this.orderSubmitted = true;
+      })
+      .catch(error => {
+          console.error("Error:", error);
+      });
+      },
+ 
         },
       });
 
