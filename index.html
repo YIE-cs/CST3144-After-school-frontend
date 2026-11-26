@@ -282,6 +282,29 @@
               this.isPhoneValid
             );
           },
+          
+          async updateAvailability(){
+            for (const item of this.cart){
+              const lesson=this.lessons.find(lesson=>lesson.id===item.id);
+              if (!lesson) {
+               throw new Error(`Lesson with ID ${item.id} not found`);
+                
+              }
+            
+              const response=await fetch(`http://localhost:3000/lessons/${lesson.id}`,{
+                method:'PUT',
+                headers:{
+                  'Content-Type':'application/json'
+                },
+                body:JSON.stringify({availability:lesson.availability})
+              });
+            if (!response.ok) {
+            throw new Error("Failed to update lesson availability");
+          }
+            
+            
+            }
+          },
 
           checkout() {
     if (!this.validateForm() || !this.canCheckout) {
@@ -314,7 +337,11 @@
       })
       .then(data => {
           console.log(data);
-          this.orderSubmitted = true;
+          return this.updateAvailability();
+      })
+      .then(() => {
+        this.orderSubmitted = true;
+        this.cart = [];
       })
       .catch(error => {
           console.error("Error:", error);
